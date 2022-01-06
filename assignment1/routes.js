@@ -44,7 +44,7 @@ if (url === '/create-user' && method === 'POST') {
         const parsedBody = Buffer.concat(body).toString();
         console.log(parsedBody);
         const message = parsedBody.split('=')[1];
-        fs.writeFile('newuser.txt', message, err => {
+        fs.writeFile('./assignment1/newuser.txt', message, err => {
             res.statusCode = 302;
             res.setHeader('Location', '/');
             return res.end();
