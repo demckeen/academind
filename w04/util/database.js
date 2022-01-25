@@ -3,8 +3,10 @@ const MongoClient = mongodb.MongoClient;
 
 let _db;
 
-const mongoConnect = (callback) => {
-  MongoClient.connect('mongodb+srv://zircadia1:MVx3bxXKS3uv47Mu@udemy.lmppa.mongodb.net/shop?retryWrites=true&w=majority')
+const mongoConnect = callback => {
+  MongoClient.connect(
+    'mongodb+srv://zircadia1:Igh3URA5TQifJt4s@udemy.lmppa.mongodb.net/shop?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true },
+  )
     .then(client => {
       console.log('Connected!');
       _db = client.db();
@@ -14,10 +16,10 @@ const mongoConnect = (callback) => {
       console.log(err);
       throw err;
     });
-}
+};
 
 const getDb = () => {
-  if(_db) {
+  if (_db) {
     return _db;
   }
   throw 'No database found!';
