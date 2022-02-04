@@ -6,6 +6,9 @@
     <%- include('../includes/navigation.ejs') %>
 
     <main>
+        <% if(successMessage) { %>
+            <div class="message"><%= successMessage %></div>
+        <% } %>
         <% if (prods.length > 0) { %>
             <div class="grid">
                 <% for (let product of prods) { %>
@@ -23,7 +26,9 @@
                         </div>
                         <div class="card__actions">
                                 <a href="/products/<%= product._id %>" class="btn">Details</a>
-                            <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+                            <% if(isAuthenticated) { %>
+                                <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+                            <% } %>
                         </div>
                     </article>
                 <% } %>

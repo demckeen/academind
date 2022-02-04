@@ -2,10 +2,15 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
+const csrf = require('csurf');
+const flash = require('connect-flash');
+
 const cors = require('cors');
 const PATH = process.env.PORT || 3000;
 
-const MONGODB_URL = 'mongodb+srv://zircadia:jojojojo12@udemy.lmppa.mongodb.net/shop?retryWrites=true&w=majority';
+const MONGODB_URL = 'mongodb+srv://zircadia:jojojojo12@udemy.lmppa.mongodb.net/shop';
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
@@ -16,34 +21,51 @@ const corsOptions = {
 };
 
 const options = {
-  useUnifiedTopology: true,
-  useNewUrlParser: true,
   family: 4
 };
 
 const app = express();
+
+const store = new MongoDBStore({
+  uri: MONGODB_URL,
+  collection: 'sessions'
+});
+const csrfProtection = csrf();
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const authRoutes = require('./routes/auth');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors(corsOptions));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({secret: 'somethinghere', resave: false, saveUninitialized: false, store: store}));
+app.use(csrfProtection);
+app.use(flash());
 
 app.use((req, res, next) => {
-  User.findById('61f466400c60c434e8620f0b')
-    .then(user => {
-      req.user = user;
-      next();
-    }) 
-    .catch(err => console.log(err));
+  if(!req.session.user) {
+  return next();}
+  else {
+  User.findById(req.session.user._id)
+  .then(user => {
+    req.user = user;
+    next();
+}).catch(err => console.log(err));
+}});
+
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
 });
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(errorController.get404);
 
@@ -52,16 +74,6 @@ mongoose
     MONGODB_URL, options
   )
   .then(result => {
-    User.findOne().then(user => {
-      if(!user) {
-        const user = new User({
-        username: 'zircadia',
-        email: 'test@email.com',
-        cart: {
-        items: []
-      }
-    });
-    user.save();}});
     app.listen(PATH);
   })
   .catch(err => {

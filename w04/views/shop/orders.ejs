@@ -5,6 +5,9 @@
     <body>
         <%- include('../includes/navigation.ejs') %>
         <main>
+            <% if(successMessage) { %>
+                <div class="message"><%= successMessage %></div>
+            <% } %>
             <% if (orders.length <= 0) { %>
                 <h1>Nothing there!</h1>
             <% } else { %>
